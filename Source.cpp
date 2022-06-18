@@ -8,13 +8,13 @@ public:
 	virtual void info() = 0;
 	virtual ~Car(){}
 };
-class Engine 
+class Engine  // РґРІРёРіР°С‚РµР»СЊ Р°РІС‚Рѕ
 {
 public:
 	virtual void info() = 0;
 	virtual ~Engine() {}
 };
-class Corpus
+class Corpus // РєРѕСЂРїСѓСЃ Р°РІС‚Рѕ
 {
 public:
 	virtual void info() = 0;
@@ -22,7 +22,7 @@ public:
 };
 
 
-// Японские автомобили
+// РЇРїРѕРЅСЃРєРёРµ Р°РІС‚РѕРјРѕР±РёР»Рё
 class JapaneseCar : public Car
 {
 public:
@@ -45,7 +45,7 @@ public:
 	}
 };
 
-// Европейские автомобили
+// Р•РІСЂРѕРїРµР№СЃРєРёРµ Р°РІС‚РѕРјРѕР±РёР»Рё
 class EuropeCar : public Car
 {
 public: 
@@ -69,7 +69,7 @@ public:
 };
 
 
-// Создание фабрики
+// Р¤Р°Р±СЂРёРєР° РїРѕ РїСЂРѕРёР·РІРѕРґСЃС‚РІСѓ Р°РІС‚РѕРјРѕР±РёР»РµР№
 class CarFactory
 {
 public:
@@ -79,7 +79,7 @@ public:
 	virtual ~CarFactory() {}
 };
 
-// Фабрика по производству Японских автомобилей
+// Р¤Р°Р±СЂРёРєР° РїРѕ РїСЂРѕРёР·РІРѕРґСЃС‚РІСѓ СЏРїРѕРЅСЃРєРёС… Р°РІС‚Рѕ
 class JapaneseCarFactory: public CarFactory
 {
 public:
@@ -94,7 +94,7 @@ public:
 	}
 };
 
-// Фабрика по производству Европейских автомобилей
+// Р¤Р°Р±СЂРёРєР° РїРѕ РїСЂРѕРёР·РІРѕРґСЃС‚РІСѓ РµРІСЂРѕРїРµР№СЃРєРёС… Р°РІС‚Рѕ
 class EuropeCarFactory : public CarFactory
 {
 public:
@@ -109,7 +109,7 @@ public:
 	}
 };
 
-// Все машины из той или иной фабрики
+// РІСЃРµ Р°РІС‚РѕРјРѕР±РёР»Рё РёР· РѕРїСЂРµРґРµР»РµРЅРЅРѕР№ С„Р°Р±СЂРёРєРё
 class AllCars
 {
 public:
@@ -130,7 +130,7 @@ public:
 	vector <Corpus*> vCorpus;
 };
 
-class СreateCar
+class CreateCar
 {
 public:
 	AllCars* createAllCars(CarFactory& factory) {
@@ -143,7 +143,7 @@ public:
 };
 int main()
 {
-	СreateCar car;
+	CreateCar car;
 	JapaneseCarFactory JC_factory;
 	EuropeCarFactory EC_factory;
 
