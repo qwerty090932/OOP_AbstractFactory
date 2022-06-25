@@ -1,157 +1,168 @@
 #include <iostream>
 #include <vector>
 using namespace std;
+struct MyContainerNode {
+    int data;
+    MyContainerNode *next;
+};
+class MyContainer {
+    MyContainerNode *head= nullptr;
+    MyContainerNode *tail= nullptr;
+    int size = 0;
+public:
+    void pushBack(int value) {
+        MyContainerNode *new_tail = new MyContainerNode{value, nullptr};
+        if (tail) {
+            tail -> next = new_tail;
+        } else {
+            head = new_tail;
+        }
+        tail = new_tail;
+        size++;
+    }
 
-class Car
-{
-public:
-	virtual void info() = 0;
-	virtual ~Car(){}
-};
-class Engine  // двигатель авто
-{
-public:
-	virtual void info() = 0;
-	virtual ~Engine() {}
-};
-class Corpus // корпус авто
-{
-public:
-	virtual void info() = 0;
-	virtual ~Corpus() {}
-};
+    MyContainerNode* pop_front() {
+        MyContainerNode* current = head;
+        if ((head) && (head != tail)) {
+            cout << "Произвели" << endl;
+            head = head->next;
+        } else if(head == tail) {
+            cout << "Произвели" << endl;
+            head = nullptr;
+            tail = nullptr;
+            return current;
+        }
+        else {
+            cout << "Очередь пуста" << endl;
+            return nullptr;
+        }
+    }
 
+    int get_size() { return size; }
 
-// Японские автомобили
-class JapaneseCar : public Car
-{
-public:
-	void info() {
-		cout << "JapaneseCars " << endl;
-	}
+    ~MyContainer() {
+        for(MyContainerNode *next, *el = head; el != nullptr; el = next) {
+            next = el -> next;
+            delete el;
+        }
+    }
 };
-class JapaneseEngine : public Engine
-{
-public:
-	void info() {
-		cout << "JapaneseEngine " << endl;
-	}
-};
-class JapaneseCorpus : public Corpus
-{
-public:
-	void info() {
-		cout << "JapaneseCorpus " << endl;
-	}
-};
+template<bool Const>
+class MyIterator {
+    friend class MyContainer;
+    friend class MyIterator<!Const>;
 
-// Европейские автомобили
-class EuropeCar : public Car
-{
-public: 
-	void info() {
-		cout << "EuropeCars " << endl;
-	}
-};
-class EuropeEngine : public Engine
-{
+    using nodePointer = std::conditional_t<Const, const MyContainerNode*, MyContainerNode*>;
+    nodePointer ptr;
 public:
-	void info() {
-		cout << "EuropeEngine " << endl;
-	}
-};
-class EuropeCorpus : public Corpus
-{
-public:
-	void info() {
-		cout << "EuropeCorpus " << endl;
-	}
-};
+    using difference_type = std::ptrdiff_t;
 
+    using value_type = int;
 
-// Фабрика по производству автомобилей
-class CarFactory
-{
-public:
-	virtual Car* createCar() = 0;
-	virtual Engine* createEngine() = 0;
-	virtual Corpus* createCorpus() = 0;
-	virtual ~CarFactory() {}
+    using pointer = std::conditional_t<Const, const int*, int*>;
+
+    using reference = std::conditional_t<Const, const int&, int&>;
+    using iterator_category = std::forward_iterator_tag;
+
+    reference operator*() const { return ptr->data; }
+
+    auto& operator++() { ptr = ptr->next; return *this; }
+    auto operator++(int) { auto result = *this; ++*this; return result; }
+
+    template<bool R>
+    bool operator==(const MyIterator<R>& rhs) const
+    { return ptr == rhs.ptr; }
+
+    template<bool R>
+    bool operator!=(const MyIterator<R>& rhs) const
+    { return ptr != rhs.ptr; }
+
+    operator MyIterator<true>() const
+    { return MyIterator<true>{ptr}; }
 };
-
-// Фабрика по производству японских авто
-class JapaneseCarFactory: public CarFactory
-{
+class IEngine {
 public:
-	Car* createCar() {
-		return new JapaneseCar;
-	}
-	Engine* createEngine() {
-		return new JapaneseEngine;
-	}
-	Corpus* createCorpus() {
-		return new JapaneseCorpus;
-	}
+    virtual void releaseEngine() = 0;
+};
+class JapaneseEngine : public IEngine {
+public:
+    void releaseEngine() override {
+        cout << "Japanese engine" << endl;
+    }
 };
 
-// Фабрика по производству европейских авто
-class EuropeCarFactory : public CarFactory
-{
+class EuropeanEngine : public IEngine {
 public:
-	Car* createCar() {
-		return new EuropeCar;
-	}
-	Engine* createEngine() {
-		return new EuropeEngine;
-	}
-	Corpus* createCorpus() {
-		return new EuropeCorpus;
-	}
+    void releaseEngine() override {
+        cout << "European engine" << endl;
+    }
 };
 
-// все автомобили из определенной фабрики
-class AllCars
-{
+class ICar {
+    int seriesNumber = rand() % 10000 + 10000; // создавая автомобиль присваиваем ему серийный номер
 public:
-	~AllCars() {
-		int i;
-		for (i = 0; i < vCar.size(); ++i)  delete vCar[i];
-		for (i = 0; i < vEngine.size(); ++i)  delete vEngine[i];
-		for (i = 0; i < vCorpus.size(); ++i)  delete vCorpus[i];
-	}
-	void info() {
-		int i;
-		for (i = 0; i < vCar.size(); ++i)  vCar[i]->info();
-		for (i = 0; i < vEngine.size(); ++i)  vEngine[i]->info();
-		for (i = 0; i < vCorpus.size(); ++i)  vCorpus[i]->info();
-	}
-	vector <Car*> vCar;
-	vector <Engine*> vEngine;
-	vector <Corpus*> vCorpus;
+    int getNumber() {
+        return seriesNumber;
+    }
+    virtual void releaseCar(IEngine* engine) = 0;
 };
 
-class CreateCar
-{
+class JapaneseCar : public ICar {
 public:
-	AllCars* createAllCars(CarFactory& factory) {
-		AllCars* p = new AllCars;
-		p->vCar.push_back(factory.createCar());
-		p->vEngine.push_back(factory.createEngine());
-		p->vCorpus.push_back(factory.createCorpus());
-		return p;
-	}
+//    JapaneseCar() {
+//        int seriesNumber = rand() % 10000 + 10000;
+//    }
+    void releaseCar(IEngine* engine) override {
+        cout << "Japanese Car ";
+        engine->releaseEngine();
+    }
 };
+
+class EuropeanCar : public ICar {
+public:
+    void releaseCar(IEngine* engine) override {
+        cout << "European Car ";
+        engine->releaseEngine();
+    }
+};
+
+class IFactory {
+public:
+    virtual IEngine* createEngine() = 0;
+    virtual ICar* createCar() = 0;
+};
+
+class JapaneseFactory : public IFactory {
+public:
+    IEngine* createEngine() override {
+        return new JapaneseEngine();
+    }
+    ICar* createCar() override {
+        return new JapaneseCar();
+    }
+};
+
+class EuropeanFactory : public IFactory {
+public:
+    IEngine* createEngine() override {
+        return new EuropeanEngine();
+    }
+    ICar* createCar() override {
+        return new EuropeanCar();
+    }
+};
+
 int main()
 {
-	CreateCar car;
-	JapaneseCarFactory JC_factory;
-	EuropeCarFactory EC_factory;
 
-	AllCars* JapanCars = car.createAllCars(JC_factory);
-	AllCars* EuropeCars = car.createAllCars(EC_factory);
-	cout << "Japanese Cars:" << endl;
-	JapanCars->info();
-	cout << " Europe Cars : " << endl;
-	EuropeCars->info();
-	// ...
+    IFactory* jFactory = new JapaneseFactory();
+
+    IEngine* jEngine = jFactory->createEngine();
+    ICar* jCar = jFactory->createCar();
+
+    jCar->releaseCar(jEngine);
+    MyContainer seriesNumbers; // добавляем серийные номера в наш контейнер, что-то типо очереди
+    seriesNumbers.pushBack(jCar->getNumber());
+    seriesNumbers.pop_front();
 }
+
