@@ -5,27 +5,39 @@ struct MyContainerNode {
     int data;
     MyContainerNode *next;
 };
+template<typename T>
 class MyContainer {
     MyContainerNode *head= nullptr;
     MyContainerNode *tail= nullptr;
     int size = 0;
+    int _n;
+    T* mCont;
 public:
-    void pushBack(int value) {
-        MyContainerNode *new_tail = new MyContainerNode{value, nullptr};
-        if (tail) {
-            tail -> next = new_tail;
-        } else {
-            head = new_tail;
-        }
-        tail = new_tail;
+//    void pushBack(T& value) {
+//        MyContainerNode *new_tail = new MyContainerNode{value, nullptr};
+//        if (tail) {
+//            tail -> next = new_tail;
+//        } else {
+//            head = new_tail;
+//        }
+//        tail = new_tail;
+//        size++;
+//    }
+    MyContainer(int n = 1) : _n(n) {
+        mCont = new T[n];
         size++;
     }
-
+    T& operator[] (const int&n) { //перегружаем оператор скобки
+        if (n>0 && n < _n)
+            return mCont[n];
+        return mCont[0]; // Если вышли за границы массива, возвращаем первый элемент, как исключение
+    }
     MyContainerNode* pop_front() {
         MyContainerNode* current = head;
         if ((head) && (head != tail)) {
             cout << "Произвели" << endl;
             head = head->next;
+            return current;
         } else if(head == tail) {
             cout << "Произвели" << endl;
             head = nullptr;
@@ -37,9 +49,7 @@ public:
             return nullptr;
         }
     }
-
     int get_size() { return size; }
-
     ~MyContainer() {
         for(MyContainerNode *next, *el = head; el != nullptr; el = next) {
             next = el -> next;
@@ -47,17 +57,17 @@ public:
         }
     }
 };
-template<bool Const>
+template<bool Const, typename T>
 class MyIterator {
-    friend class MyContainer;
-    friend class MyIterator<!Const>;
+    friend class MyContainer<T>;
+    friend class MyIterator<!Const, T>;
 
     using nodePointer = std::conditional_t<Const, const MyContainerNode*, MyContainerNode*>;
     nodePointer ptr;
 public:
     using difference_type = std::ptrdiff_t;
 
-    using value_type = int;
+    using value_type = T;
 
     using pointer = std::conditional_t<Const, const int*, int*>;
 
@@ -70,20 +80,21 @@ public:
     auto operator++(int) { auto result = *this; ++*this; return result; }
 
     template<bool R>
-    bool operator==(const MyIterator<R>& rhs) const
+    bool operator==(const MyIterator<R, T>& rhs) const
     { return ptr == rhs.ptr; }
 
     template<bool R>
-    bool operator!=(const MyIterator<R>& rhs) const
+    bool operator!=(const MyIterator<R, T>& rhs) const
     { return ptr != rhs.ptr; }
 
-    operator MyIterator<true>() const
-    { return MyIterator<true>{ptr}; }
+    operator MyIterator<true, T>() const
+    { return MyIterator<true, T>{ptr}; }
 };
 class IEngine {
 public:
     virtual void releaseEngine() = 0;
 };
+
 class JapaneseEngine : public IEngine {
 public:
     void releaseEngine() override {
@@ -109,11 +120,9 @@ public:
 
 class JapaneseCar : public ICar {
 public:
-//    JapaneseCar() {
-//        int seriesNumber = rand() % 10000 + 10000;
-//    }
+
     void releaseCar(IEngine* engine) override {
-        cout << "Japanese Car ";
+        cout << "Собрали японский автомобиль: ";
         engine->releaseEngine();
     }
 };
@@ -121,7 +130,7 @@ public:
 class EuropeanCar : public ICar {
 public:
     void releaseCar(IEngine* engine) override {
-        cout << "European Car ";
+        cout << "Собрали европейский автомобиль: ";
         engine->releaseEngine();
     }
 };
@@ -154,15 +163,21 @@ public:
 
 int main()
 {
-
     IFactory* jFactory = new JapaneseFactory();
 
     IEngine* jEngine = jFactory->createEngine();
     ICar* jCar = jFactory->createCar();
 
     jCar->releaseCar(jEngine);
-    MyContainer seriesNumbers; // добавляем серийные номера в наш контейнер, что-то типо очереди
-    seriesNumbers.pushBack(jCar->getNumber());
-    seriesNumbers.pop_front();
-}
 
+    IFactory* eFactory = new EuropeanFactory();
+
+    IEngine* eEngine = eFactory->createEngine();
+    ICar* eCar = eFactory->createCar();
+
+    eCar->releaseCar(jEngine);
+
+    MyContainer<ICar*> seriesNumbers; // добавляем серийные номера в наш контейнер, что-то типо очереди
+    seriesNumbers[0] = jCar;
+    cout << seriesNumbers.get_size() << endl;
+}
